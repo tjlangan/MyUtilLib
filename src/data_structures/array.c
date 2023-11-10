@@ -6,18 +6,25 @@ Array* create(unsigned int capacity) {
     if (capacity == 0) {
         capacity = 2;
     }
-    Array* arr = (Array*)malloc(sizeof(Array) + capacity * sizeof(int));
+    Array* arr = (Array*)malloc(sizeof(Array));
 
     if (arr != NULL) {
         arr->capacity = capacity;
         arr->count = 0;
         arr->error = false;
+        arr->values = (int*)malloc(capacity * sizeof(int));
+
+        if (arr->values == NULL) {
+            free(arr);
+            return NULL;
+        }
     }
     return arr;
 }
 
 int destroy(Array** arr) {
     if (*arr != NULL) {
+        free((*arr)->values);
         free(*arr);
         *arr = NULL;
         return 0;
