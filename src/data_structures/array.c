@@ -148,7 +148,7 @@ int append(Array* arr, int value) {
     }
 
     arr->count += 1;
-    return insert(arr, arr->count - 1, value);
+    return insert_at(arr, arr->count - 1, value);
 }
 
 int swap(Array* arr, unsigned int index_a, unsigned int index_b) {
