@@ -2,10 +2,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run Tests",
+            "name": "Run Test",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/tests/my_tests",
+            "program": "${workspaceFolder}/tests/my_test.elf",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
