@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "../src/data_structures/array.h"
+#include "../src/data_structures/arrays/array.h"
 
 void print_arr(const void* element) { printf("%d ", *((int*)element)); }
 
