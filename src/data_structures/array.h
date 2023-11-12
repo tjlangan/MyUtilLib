@@ -2,228 +2,171 @@
 #define ARRAY_H
 
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
-/**
- * @file array.h
- *
- * @brief This header file defines a dynamic array module for integer elements.
- *
- * The dynamic array supports various operations, including creation,
- * destruction, element insertion and removal, capacity management, and utility
- * functions.
- */
-
-/**
- * @struct Array_t
- *
- * @brief Represents a dynamic array of integers.
- *
- * The Array_t structure includes information about the array's current count,
- * capacity, error status, and a pointer to the array's data.
- */
-typedef struct Array_t {
-    unsigned int count;    /**< Number of elements currently in the array. */
-    unsigned int capacity; /**< Total capacity of the array. */
-    bool error;            /**< Flag indicating an error condition. */
-    int* values;           /**< Pointer to the array's data. */
+// Structure representing a generic Array
+typedef struct {
+    size_t data_size;  ///< Size of each element in bytes
+    size_t size;       ///< Current number of elements in the Array
+    size_t capacity;   ///< Maximum capacity of the Array
+    void* data;        ///< Pointer to the data array
 } Array;
 
 /**
- * @brief Create a new array with the given capacity.
+ * @brief Creates a new Array.
  *
- * This function allocates memory for a new array with the specified initial
- * capacity. If the specified capacity is 0, a default capacity of 2 is used.
- *
- * @param capacity The initial capacity of the array.
- * @return A pointer to the newly created array, or NULL if an error occurs.
+ * @param data_size Size of each element in bytes.
+ * @param capacity Maximum capacity of the Array.
+ * @return A pointer to the newly created Array, or NULL on failure.
  */
-Array* create(unsigned int capacity);
+Array* Array_create(size_t data_size, size_t capacity);
 
 /**
- * @brief Destroy an array and free its memory.
+ * @brief Destroys a Array and frees associated memory.
  *
- * This function deallocates the memory occupied by the array and sets the
- * provided pointer to NULL after destruction.
- *
- * @param arr A pointer to the array to be destroyed. The pointer is set to NULL
- * after destruction.
- * @return 0 on success, -1 on failure.
+ * @param arr Pointer to the Array to be destroyed.
  */
-int destroy(Array** arr);
+void Array_destroy(Array** arr);
 
 /**
- * @brief Check if the array is empty.
+ * @brief Appends an element to the end of the Array.
  *
- * This function returns true if the array is empty (count is 0), false
- * otherwise.
- *
- * @param arr A pointer to the array.
- * @return true if the array is empty, false otherwise.
+ * @param arr Pointer to the Array.
+ * @param element Pointer to the element to be appended.
  */
-bool is_empty(Array* arr);
+void Array_append(Array* arr, const void* element);
 
 /**
- * @brief Check if the array is full.
+ * @brief Inserts an element at a specific index in the Array.
  *
- * This function returns true if the array is full (count equals capacity),
- * false otherwise.
- *
- * @param arr A pointer to the array.
- * @return true if the array is full, false otherwise.
+ * @param arr Pointer to the Array.
+ * @param index Index at which the element will be inserted.
+ * @param element Pointer to the element to be inserted.
  */
-bool is_full(Array* arr);
+void Array_insert(Array* arr, size_t index, const void* element);
 
 /**
- * @brief Check if a given index is within bounds of the array.
+ * @brief Removes an element at a specific index from the Array.
  *
- * This function returns true if the specified index is within the valid bounds
- * of the array, false otherwise.
- *
- * @param arr A pointer to the array.
- * @param index The index to check.
- * @return true if the index is within bounds, false otherwise.
+ * @param arr Pointer to the Array.
+ * @param index Index of the element to be removed.
  */
-bool in_bounds(Array* arr, unsigned int index);
+void Array_remove(Array* arr, size_t index);
 
 /**
- * @brief Get the number of elements in the array.
+ * @brief Retrieves an element at a specific index in the Array.
  *
- * @param arr A pointer to the array.
- * @return The number of elements in the array, or -1 if the array is NULL.
+ * @param arr Pointer to the Array.
+ * @param index Index of the element to be retrieved.
+ * @return A pointer to the retrieved element, or NULL if the index is out of
+ * bounds.
  */
-int get_count(Array* arr);
+const void* Array_get(const Array* arr, size_t index);
 
 /**
- * @brief Get the total capacity of the array.
+ * @brief Updates the value of an element at a specific index in the Array.
  *
- * @param arr A pointer to the array.
- * @return The total capacity of the array, or -1 if the array is NULL.
+ * @param arr Pointer to the Array.
+ * @param index Index of the element to be updated.
+ * @param element Pointer to the new value for the element.
  */
-int get_capacity(Array* arr);
+void Array_set(Array* arr, size_t index, const void* element);
 
 /**
- * @brief Get the error status of the array.
+ * @brief Searches for an element in the Array and returns its index.
  *
- * @param arr A pointer to the array.
- * @return The error status of the array, or true if the array is NULL.
+ * @param arr Pointer to the Array.
+ * @param element Pointer to the element to be searched for.
+ * @return The index of the first occurrence of the element, or SIZE_MAX if not
+ * found.
  */
-bool get_error(Array* arr);
+size_t Array_find(const Array* arr, const void* element);
 
 /**
- * @brief Get the first element of the array.
+ * @brief Retrieves the current number of elements in the Array.
  *
- * This function returns the value of the first element in the array.
- *
- * @param arr A pointer to the array.
- * @return The value of the first element, or -1 if the array is empty or NULL.
+ * @param arr Pointer to the Array.
+ * @return The current number of elements in the Array, or SIZE_MAX if arr is
+ * NULL.
  */
-int first(Array* arr);
+size_t Array_size(const Array* arr);
 
 /**
- * @brief Get the last element of the array.
+ * @brief Retrieves the maximum capacity of the Array.
  *
- * This function returns the value of the last element in the array.
- *
- * @param arr A pointer to the array.
- * @return The value of the last element, or -1 if the array is empty or NULL.
+ * @param arr Pointer to the Array.
+ * @return The maximum capacity of the Array, or SIZE_MAX if arr is NULL.
  */
-int last(Array* arr);
+size_t Array_capacity(const Array* arr);
 
 /**
- * @brief Find the index of the first occurrence of a value in the array.
+ * @brief Checks if the Array is empty.
  *
- * This function searches for the specified value in the array and returns the
- * index of the first occurrence. If the value is not found, it returns -1.
- *
- * @param arr A pointer to the array.
- * @param value The value to search for.
- * @return The index of the first occurrence of the value, or -1 if not found.
+ * @param arr Pointer to the Array.
+ * @return True if the Array is empty, false otherwise.
  */
-int index_of(Array* arr, int value);
+bool Array_is_empty(const Array* arr);
 
 /**
- * @brief Get the value at a specific index in the array.
+ * @brief Checks if the Array is full.
  *
- * This function returns the value at the specified index in the array.
- *
- * @param arr A pointer to the array.
- * @param index The index of the element to retrieve.
- * @return The value at the specified index, or -1 if the index is out of bounds
- * or the array is NULL.
+ * @param arr Pointer to the Array.
+ * @return True if the Array is full, false otherwise.
  */
-int value_at(Array* arr, unsigned int index);
+bool Array_is_full(const Array* arr);
 
 /**
- * @brief Insert a value at a specific index in the array.
+ * @brief Resizes the Array to a new capacity.
  *
- * This function inserts the specified value at the given index in the array.
- * If the index is out of bounds, the operation fails.
- *
- * @param arr A pointer to the array.
- * @param index The index at which to insert the value.
- * @param value The value to insert.
- * @return 0 on success, -1 on failure.
+ * @param arr Pointer to the Array.
+ * @param new_capacity New capacity for the Array.
  */
-int insert_at(Array* arr, unsigned int index, int value);
+void Array_resize(Array* arr, size_t new_capacity);
 
 /**
- * @brief Remove the element at a specific index in the array.
+ * @brief Clears all elements from the Array.
  *
- * This function removes the element at the specified index in the array
- * and shifts the remaining elements to fill the gap.
- *
- * @param arr A pointer to the array.
- * @param index The index of the element to remove.
- * @return 0 on success, -1 on failure.
+ * @param arr Pointer to the Array.
  */
-int remove_at(Array* arr, unsigned int index);
+void Array_clear(Array* arr);
 
 /**
- * @brief Append a value to the end of the array.
+ * @brief Iterates over the elements of the Array and applies a callback
+ * function.
  *
- * This function appends the specified value to the end of the array.
- * If the array is full, it automatically increases its capacity before
- * appending.
- *
- * @param arr A pointer to the array.
- * @param value The value to append.
- * @return 0 on success, -1 on failure.
+ * @param arr Pointer to the Array.
+ * @param callback Callback function to apply to each element.
  */
-int append(Array* arr, int value);
+void Array_iterate(const Array* arr, void (*callback)(const void* element));
 
 /**
- * @brief Swap the values at two specified indices in the array.
+ * @brief Swaps the elements at two indices in the Array.
  *
- * This function swaps the values at the specified indices in the array.
- * If the indices are out of bounds, the operation fails.
- *
- * @param arr A pointer to the array.
- * @param index_a The index of the first element to swap.
- * @param index_b The index of the second element to swap.
- * @return 0 on success, -1 on failure.
+ * @param arr Pointer to the Array.
+ * @param index_a Index of the first element.
+ * @param index_b Index of the second element.
  */
-int swap(Array* arr, unsigned int index_a, unsigned int index_b);
+void Array_swap(Array* arr, size_t index_a, size_t index_b);
 
 /**
- * @brief Fill the array with a specified value.
+ * @brief Comparison function type for custom sorting.
  *
- * This function fills the entire array with the specified value.
- *
- * @param arr A pointer to the array.
- * @param value The value to fill the array with.
- * @return 0 on success, -1 on failure.
+ * @param a Pointer to the first element.
+ * @param b Pointer to the second element.
+ * @return A negative value if a should come before b, zero if a and b are
+ * equal, or a positive value if a should come after b.
  */
-int fill(Array* arr, int value);
+typedef int (*CompareFunction)(const void* a, const void* b);
 
 /**
- * @brief Increase the capacity of the array.
+ * @brief Sorts the elements of the Array based on a custom comparison
+ * function.
  *
- * This function increases the capacity of the array by doubling its current
- * capacity.
- *
- * @param arr A pointer to the array.
- * @return 0 on success, -1 on failure.
+ * @param arr Pointer to the Array.
+ * @param compare Comparison function for sorting elements.
  */
-int increase_capacity(Array* arr);
+void Array_sort(Array* arr, CompareFunction compare);
 
 #endif
