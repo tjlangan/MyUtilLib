@@ -10,7 +10,7 @@
                 "${workspaceFolder}/src/data_structures/array.c",
                 "${workspaceFolder}/tests/test_array.c",
                 "-o",
-                "${workspaceFolder}/tests/tests"
+                "${workspaceFolder}/tests/my_tests"
             ],
             "group": {
                 "kind": "build",

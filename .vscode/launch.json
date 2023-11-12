@@ -5,7 +5,7 @@
             "name": "Run Tests",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/tests/tests",
+            "program": "${workspaceFolder}/tests/my_tests",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

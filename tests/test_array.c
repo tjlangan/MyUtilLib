@@ -14,6 +14,7 @@ int main(void) {
     }
 
     Array_iterate(arr, print_arr);
+    printf("\n No Errors\n");
 
     return 0;
 }
