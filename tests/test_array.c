@@ -93,6 +93,10 @@ void test_array(void) {
     for (size_t i = 0; i < 10; i++) {
         assert(*((int*)Array_get(arr, i)) == doubled[i]);
     }
+
+    // Test Delete
+    Array_destroy(&arr);
+    assert(arr == NULL);
 }
 
 int main(void) {
