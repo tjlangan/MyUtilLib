@@ -10,3 +10,5 @@ typedef struct {
 could just check boolean then if there is an error send the error code to a function
 to print / log the error
 3) Make decision about interate function. do you want it to be able modify values or not 
+4) make array have a sort of dataype union / enum or something and then just have functions
+hand accordingly --> idk kinda like the genericness of Array, this would limit it 
