@@ -15,3 +15,5 @@ hand accordingly --> idk kinda like the genericness of Array, this would limit i
 
 5) create my own "Generic Element/Item" data class that contains data_size and data and have all 
 structures be build arround that. essentially just a just a size_t data_size and void* data
+
+TODO: NEED better error handling for nulls. 
