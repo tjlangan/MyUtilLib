@@ -8,6 +8,7 @@
             "args": [
                 "-g",
                 "${workspaceFolder}/src/data_structures/arrays/array.c",
+                "${workspaceFolder}/src/data_structures/arrays/int_array.c",
                 "${workspaceFolder}/tests/test_array.c",
                 "-o",
                 "${workspaceFolder}/tests/my_test.elf"
