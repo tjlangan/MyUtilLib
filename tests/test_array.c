@@ -1,8 +1,4 @@
-#include <assert.h>
-#include <stdio.h>
-
-#include "../src/data_structures/arrays/array.h"
-#include "../src/data_structures/arrays/int_array.h"
+#include "test_array.h"
 
 void print_arr(const void* element) { printf("%d ", *((int*)element)); }
 void double_int(const void* element) { *((int*)element) *= 2; }
@@ -19,7 +15,7 @@ int compare_int(const void* a, const void* b) {
     }
 }
 
-void test_array(void) {
+void test_array() {
     // Test creation
     Array* arr = Array_create(sizeof(int), 5);
     assert(arr != NULL);
@@ -100,7 +96,7 @@ void test_array(void) {
     assert(arr == NULL);
 }
 
-void test_int_array(void) {
+void test_int_array() {
     // Test creation
     Array* arr = IntArray_create(5);
     assert(arr != NULL);
@@ -179,13 +175,4 @@ void test_int_array(void) {
     // Test Delete
     IntArray_destroy(&arr);
     assert(arr == NULL);
-}
-
-int main(void) {
-    // Run test functions
-    test_array();
-
-    printf("Looks good\n");
-
-    return 0;
 }

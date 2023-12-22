@@ -127,7 +127,7 @@ void IntArray_clear(Array* arr);
  * @param arr Pointer to the Array.
  * @param callback Callback function to apply to each element.
  */
-void IntArray_iterate(const Array* arr, void (*callback)(const int* element));
+void IntArray_iterate(const Array* arr, void (*callback)(const void* element));
 
 /**
  * @brief Swaps the elements at two indices in the Array.

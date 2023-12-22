@@ -55,7 +55,7 @@ void IntArray_remove(Array* arr, size_t index) { Array_remove(arr, index); }
  * bounds.
  */
 int IntArray_get(const Array* arr, size_t index) {
-    return (int)Array_get(arr, index);
+    return *(int*)Array_get(arr, index);
 }
 
 /**
@@ -138,7 +138,7 @@ void IntArray_clear(Array* arr) { Array_clear(arr); }
  * @param arr Pointer to the Array.
  * @param callback Callback function to apply to each element.
  */
-void IntArray_iterate(const Array* arr, void (*callback)(const int* element)) {
+void IntArray_iterate(const Array* arr, void (*callback)(const void* element)) {
     Array_iterate(arr, callback);
 }
 
@@ -153,7 +153,7 @@ void IntArray_swap(Array* arr, size_t index_a, size_t index_b) {
     Array_swap(arr, index_a, index_b);
 }
 
-static int __compare(const int a, const int b) {
+static int __compare(const void* a, const void* b) {
     int int_a = *((const int*)a);
     int int_b = *((const int*)b);
 
@@ -173,6 +173,6 @@ static int __compare(const int a, const int b) {
  */
 void IntArray_sort(Array* arr) { Array_sort(arr, __compare); }
 
-static void __print(const int* element) { printf("%d ", *element); }
+static void __print(const void* element) { printf("%d ", *(int*)element); }
 
 void IntArray_print(Array* arr) { IntArray_iterate(arr, __print); }
