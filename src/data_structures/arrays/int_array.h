@@ -139,12 +139,12 @@ void IntArray_iterate(const Array* arr, void (*callback)(const int* element));
 void IntArray_swap(Array* arr, size_t index_a, size_t index_b);
 
 /**
- * @brief Sorts the elements of the Array based on a custom comparison
- * function.
+ * @brief Sorts the elements of the Array
  *
  * @param arr Pointer to the Array.
- * @param compare Comparison function for sorting elements.
  */
-void IntArray_sort(Array* arr, CompareFunction compare);
+void IntArray_sort(Array* arr);
+
+void IntArray_print(Array* arr);
 
 #endif

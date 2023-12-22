@@ -102,6 +102,10 @@ void Array_remove(Array* arr, size_t index) {
  */
 const void* Array_get(const Array* arr, size_t index) {
     if (arr == NULL || arr->data == NULL || index >= arr->size) {
+        fprintf(
+            stderr,
+            "Array_get Failed! Return value is NULL. Attempted index = %ld\n",
+            index);
         return NULL;
     }
     return &((const char*)arr->data)[index * arr->data_size];
@@ -201,6 +205,10 @@ void Array_resize(Array* arr, size_t new_capacity) {
             arr->capacity = new_capacity;
         } else {
             // TODO
+            fprintf(
+                stderr,
+                "Array_resize Failed! Could not realloc to new_capacity = %ld",
+                new_capacity);
         }
     }
 }
