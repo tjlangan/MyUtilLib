@@ -4,8 +4,10 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "make test",
-            "args": [],
+            "command": "make",
+            "args": [
+                "test"
+            ],
             "group": {
                 "kind": "build",
                 "isDefault": true
