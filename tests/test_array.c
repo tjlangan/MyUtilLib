@@ -1,5 +1,13 @@
 #include "test_array.h"
 
+#include "string.h"
+
+typedef struct Person {
+    int age;
+    float height;
+    char name[64];
+} Person;
+
 void print_arr(const void* element) { printf("%d ", *((int*)element)); }
 void double_int(const void* element) { *((int*)element) *= 2; }
 int compare_int(const void* a, const void* b) {
@@ -175,4 +183,74 @@ void test_int_array() {
     // Test Delete
     IntArray_destroy(&arr);
     assert(arr == NULL);
+}
+
+void test_struct_array() {
+    // Test creation
+    Array* arr = Array_create(sizeof(Person), 5);
+    assert(arr != NULL);
+    assert(arr->capacity == 5);
+    assert(arr->data != NULL);
+    assert(arr->size == 0);
+    assert(arr->data_size == sizeof(Person));
+
+    // Test basics
+    assert(Array_size(arr) == 0);
+    assert(Array_capacity(arr) == 5);
+    assert(Array_is_empty(arr) == true);
+    assert(Array_is_full(arr) == false);
+
+    Person* renee;
+    renee->age = 23;
+    renee->height = 5.1;
+    strcpy(renee->name, "renee");
+
+    Person* tj;
+    tj->age = 24;
+    tj->height = 5.9;
+    strcpy(tj->name, "tj");
+
+    Person* hunter;
+    hunter->age = 21;
+    hunter->height = 5.8;
+    strcpy(hunter->name, "hunter");
+
+    Person* anna;
+    anna->age = 22;
+    anna->height = 5.4;
+    strcpy(anna->name, "anna");
+
+    Person* emily;
+    emily->age = 27;
+    emily->height = 5.4;
+    strcpy(emily->name, "emily");
+
+    Person* brewski;
+    brewski->age = 1;
+    brewski->height = 1.5;
+    strcpy(brewski->name, "brewski");
+
+    Person* temp;
+
+    // Test appending
+    Array_append(arr, renee);  // {renee}
+    assert(Array_size(arr) == 1);
+    temp = (Person*)Array_get(arr, 0);
+    assert(temp->age == renee->age);
+    assert(temp->height == renee->height);
+    assert(strcmp(temp->name, renee->name) == 0);
+
+    // Test inserting
+    Array_insert(arr, 0, tj);  // insert in front {tj, renee}
+    Array_insert(arr, Array_size(arr),
+                 hunter);        // insert at back {tj, renee, hunter}
+    Array_insert(arr, 1, anna);  // insert in middle {tj, anna, renee, hunter}
+
+    assert(Array_size(arr) == 4);
+    temp = (Person*)Array_get(arr, 0);
+    assert(strcmp(temp->name, tj->name) == 0);
+    temp = (Person*)Array_get(arr, Array_size(arr) - 1);
+    assert(strcmp(temp->name, hunter->name) == 0);
+    temp = (Person*)Array_get(arr, 1);
+    assert(strcmp(temp->name, anna->name) == 0);
 }

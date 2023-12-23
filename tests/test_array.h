@@ -8,5 +8,6 @@
 
 void test_array();
 void test_int_array();
+void test_struct_array();
 
 #endif
