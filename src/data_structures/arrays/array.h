@@ -159,7 +159,7 @@ void Array_swap(Array* arr, size_t index_a, size_t index_b);
  * @return A negative value if a should come before b, zero if a and b are
  * equal, or a positive value if a should come after b.
  */
-typedef int (*CompareFunction)(const void* a, const void* b);
+typedef int (*ArrayCompareFunction)(const void* a, const void* b);
 
 /**
  * @brief Sorts the elements of the Array based on a custom comparison
@@ -168,6 +168,6 @@ typedef int (*CompareFunction)(const void* a, const void* b);
  * @param arr Pointer to the Array.
  * @param compare Comparison function for sorting elements.
  */
-void Array_sort(Array* arr, CompareFunction compare);
+void Array_sort(Array* arr, ArrayCompareFunction compare);
 
 #endif

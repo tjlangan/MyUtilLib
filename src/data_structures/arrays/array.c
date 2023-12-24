@@ -264,7 +264,7 @@ void Array_swap(Array* arr, size_t index_a, size_t index_b) {
 }
 
 static size_t partition(Array* arr, size_t low, size_t high,
-                        CompareFunction compare) {
+                        ArrayCompareFunction compare) {
     const void* pivot = Array_get(arr, high);
     size_t i = low - 1;
 
@@ -280,7 +280,7 @@ static size_t partition(Array* arr, size_t low, size_t high,
 }
 
 static void quick_sort(Array* arr, size_t low, size_t high,
-                       CompareFunction compare) {
+                       ArrayCompareFunction compare) {
     if (low < high) {
         size_t pi = partition(arr, low, high, compare);
 
@@ -299,7 +299,7 @@ static void quick_sort(Array* arr, size_t low, size_t high,
  * @param arr Pointer to the Array.
  * @param compare Comparison function for sorting elements.
  */
-void Array_sort(Array* arr, CompareFunction compare) {
+void Array_sort(Array* arr, ArrayCompareFunction compare) {
     if (arr != NULL && compare != NULL) {
         quick_sort(arr, 0, arr->size - 1, compare);
     }
