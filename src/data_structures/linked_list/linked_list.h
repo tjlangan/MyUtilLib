@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -39,9 +40,9 @@ void List_clear(List* list);
 
 /**
  * @brief Destroys the entire linked list.
- * @param list: Pointer to the linked list.
+ * @param list: Pointer to a pointer to the linked list.
  */
-void List_destroy(List* list);
+void List_destroy(List** list);
 
 /**
  * @brief Returns the size of the linked list.
@@ -77,10 +78,9 @@ void List_append(List* list, void* element);
  * @brief Finds the index of the specified element in the linked list.
  * @param list: Pointer to the linked list.
  * @param element: Element to be found.
- * @param data_size: Size of the element's data.
  * @return size_t: Index of the element in the list, SIZE_MAX if not found.
  */
-size_t List_find(List* list, void* element, size_t data_size);
+size_t List_find(List* list, void* element);
 
 /**
  * @brief Retrieves the node at the specified index in the linked list.

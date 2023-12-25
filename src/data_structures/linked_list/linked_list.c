@@ -12,20 +12,31 @@ List* List_create(size_t data_size) {
         return (List*)NULL;
     }
 
+    new_list->head = (ListNode**)malloc(sizeof(List*));
+    if (new_list->head == NULL) {
+        free(new_list);
+        return (List*)NULL;
+    }
+
     new_list->data_size = data_size;
     new_list->size = 0;
-    new_list->head = NULL;
 
     return new_list;
 }
 
-static ListNode* create_node(void* element) {
+static ListNode* create_node(void* element, size_t data_size) {
     ListNode* new_node = (ListNode*)malloc(sizeof(ListNode));
-    if (!new_node) {
+    if (new_node == NULL) {
         return (ListNode*)NULL;
     }
 
-    new_node->data = element;
+    new_node->data = malloc(data_size);
+    if (new_node->data == NULL) {
+        free(new_node);
+        return (ListNode*)NULL;
+    }
+
+    memcpy(new_node->data, element, data_size);
     new_node->next = NULL;
     return new_node;
 }
@@ -44,6 +55,7 @@ void List_clear(List* list) {
 
     while (current != NULL) {
         next = current->next;
+        free(current->data);
         free(current);
         current = next;
     }
@@ -56,15 +68,15 @@ void List_clear(List* list) {
  * @brief Destroys the entire linked list.
  * @param list: Pointer to the linked list.
  */
-void List_destroy(List* list) {
-    if (list == NULL || list->head == NULL || *(list->head) == NULL) {
+void List_destroy(List** list) {
+    if (list == NULL || *list == NULL) {
         return;
     }
 
-    List_clear(list);
+    List_clear(*list);
 
-    free(list);
-    list = NULL;
+    free(*list);
+    *list = NULL;
 }
 
 /**
@@ -88,29 +100,27 @@ size_t List_size(List* list) {
  * @param index: Index at which the element needs to be inserted.
  */
 void List_insert(List* list, void* element, size_t index) {
-    if (list == NULL || list->head == NULL || *(list->head) == NULL) {
+    if (list == NULL) {
         return;
     }
 
-    ListNode* new_node = create_node(element);
+    ListNode* new_node = create_node(element, list->data_size);
+
     if (new_node == NULL) {
         return;
     }
 
-    if (index == 0) {
-        new_node->next = *(list->head);
+    if (List_size(list) == 0) {
         *(list->head) = new_node;
     } else {
-        size_t count = 1;
-        ListNode* current = *(list->head);
-
-        while (count < index && current->next != NULL) {
-            count++;
-            current = current->next;
+        if (index == 0) {
+            new_node->next = *(list->head);
+            *(list->head) = new_node;
+        } else {
+            ListNode* prev = List_get(list, index - 1);
+            new_node->next = prev->next;
+            prev->next = new_node;
         }
-
-        new_node->next = current->next;
-        current->next = new_node;
     }
     list->size++;
 }
@@ -128,17 +138,16 @@ void List_prepend(List* list, void* element) { List_insert(list, element, 0); }
  * @param element: Element to be inserted.
  */
 void List_append(List* list, void* element) {
-    List_insert(list, element, SIZE_MAX);
+    List_insert(list, element, List_size(list));
 }
 
 /**
  * @brief Finds the index of the specified element in the linked list.
  * @param list: Pointer to the linked list.
  * @param element: Element to be found.
- * @param data_size: Size of the element's data.
  * @return size_t: Index of the element in the list, SIZE_MAX if not found.
  */
-size_t List_find(List* list, void* element, size_t data_size) {
+size_t List_find(List* list, void* element) {
     if (list == NULL || list->head == NULL || *(list->head) == NULL ||
         element == NULL) {
         return SIZE_MAX;
@@ -148,7 +157,7 @@ size_t List_find(List* list, void* element, size_t data_size) {
     ListNode* current = *(list->head);
 
     while (current != NULL) {
-        if (memcmp(current->data, element, data_size) == 0) {
+        if (memcmp(current->data, element, list->data_size) == 0) {
             return index;
         }
 
@@ -173,12 +182,13 @@ ListNode* List_get(List* list, size_t index) {
 
     ListNode* current = *(list->head);
     size_t i = 0;
-    while (current != NULL) {
-        if (i == index) {
-            return current;
-        }
-        i++;
+    while (current != NULL && i < index) {
         current = current->next;
+        i++;
+    }
+
+    if (i == index && current != NULL) {
+        return current;
     }
 
     return (ListNode*)NULL;
@@ -198,6 +208,7 @@ void List_remove(List* list, size_t index) {
         ListNode* temp = *(list->head);
         *(list->head) = (*(list->head))->next;
         free(temp);
+        list->size--;
         return;
     }
 
