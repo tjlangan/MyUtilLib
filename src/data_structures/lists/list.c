@@ -1,4 +1,4 @@
-#include "linked_list.h"
+#include "list.h"
 
 /**
  * @brief Creates a new list.
