@@ -12,8 +12,9 @@ to print / log the error
 3) Make decision about interate function. do you want it to be able modify values or not 
 4) make array have a sort of dataype union / enum or something and then just have functions
 hand accordingly --> idk kinda like the genericness of Array, this would limit it 
-
 5) create my own "Generic Element/Item" data class that contains data_size and data and have all 
 structures be build arround that. essentially just a just a size_t data_size and void* data
+6) Once you get Graph/Tree data structure defined maybe turn "node" into more a of a generic
+be used for all graphs/trees/and linked lists?
 
 TODO: NEED better error handling for nulls. 
