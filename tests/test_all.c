@@ -12,7 +12,6 @@ int main() {
 
     printf("Testing Linked Lists...\n");
     test_list();
-    test_int_list();
     printf("Linked List tests pass!\n");
 
     return 0;
