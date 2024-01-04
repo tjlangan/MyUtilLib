@@ -65,11 +65,16 @@ size_t IntList_find(List* list, int element) {
  * @brief Retrieves the node at the specified index in the linked list.
  * @param list: Pointer to the linked list.
  * @param index: Index of the node to be retrieved.
- * @return ListNode*: Pointer to the node at the given index, NULL if index is
+ * @return int: value at the node at the given index, NULL if index is
  * out of bounds.
  */
-ListNode* IntList_get(List* list, size_t index) {
-    return List_get(list, index);
+int IntList_get(List* list, size_t index) {
+    ListNode* temp = List_get(list, index);
+    if (temp != NULL) {
+        return *((int*)(temp->data));
+    }
+
+    return (int)NULL;
 }
 
 /**
