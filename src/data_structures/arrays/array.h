@@ -157,8 +157,7 @@ ReturnError Array_clear(Array* arr);
  *
  * @return ReturnError will return an struct containing an ErrorCode enum
  */
-ReturnError Array_iterate(const Array* arr,
-                          void (*callback)(const void* element));
+ReturnError Array_iterate(const Array* arr, CallbackFunction callback);
 
 /**
  * @brief Swaps the elements at two indices in the Array.

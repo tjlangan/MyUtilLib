@@ -53,6 +53,13 @@ typedef struct ReturnSizeTType {
 } ReturnSizeT;
 
 /**
+ * @brief Callback function to be applied to an element; used in iteration
+ *
+ * @param element A GenericDataType pointer to the element
+ */
+typedef void (*CallbackFunction)(T* element);
+
+/**
  * @brief Comparison function type for custom sorting.
  *
  * @param a Pointer to the first element.

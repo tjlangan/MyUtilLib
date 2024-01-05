@@ -338,62 +338,169 @@ ReturnBool Array_is_full(const Array* arr) {
 }
 
 ReturnError Array_resize(Array* arr, size_t new_capacity) {
-    if (arr != NULL) {
-        if (new_capacity < arr->size) {
-            arr->size = new_capacity;
-        }
+    ReturnError result = {.error = NO_ERROR};
 
-        void* new_data = realloc(arr->data, new_capacity * arr->data_size);
-        if (new_data != NULL) {
-            arr->data = new_data;
-            arr->capacity = new_capacity;
-        } else {
-            // TODO
-            fprintf(stderr,
-                    "Array_resize Failed! Could not realloc to "
-                    "new_capacity = %ld",
-                    new_capacity);
+    if (arr == NULL) {
+        result.error = ERROR_NULL;
+        return result;
+    }
+
+    // might wanna check that new_capacity isnt like 100 quadrillion or some
+    // stupid large number
+
+    // Re-allocate new_values array
+    T* new_values = (T*)realloc(arr->values, new_capacity * sizeof(T));
+    if (new_values == NULL) {
+        result.error = ERROR_ALLOCATION;
+        return result;
+    }
+
+    // free or allocate T.data pointers whether the array is shrinking or
+    // growing
+    if (new_capacity < arr->capacity) {
+        for (size_t i = new_capacity; i < arr->capacity; i++) {
+            free(arr->values[i].data);
+            arr->values[i].data = NULL;
         }
+    } else {
+        for (size_t i = arr->capacity; i < new_capacity; i++) {
+            new_values[i].size = arr->data_size;
+            new_values[i].data = mallloc(arr->data_size);
+            if (new_values[i].data == NULL) {
+                result.error = ERROR_ALLOCATION;
+                return result;
+            }
+        }
+    }
+
+    // Assign new values
+    if (new_capacity < arr->size) {
+        arr->size = new_capacity;
+    }
+    arr->capacity = new_capacity;
+    arr->values = new_values;
+
+    return result;
+}
+
+ReturnError Array_clear(Array* arr) {
+    ReturnError result = {.error = NO_ERROR};
+
+    if (arr == NULL || arr->values == NULL) {
+        result.error = ERROR_NULL;
+        return result;
+    }
+
+    // Free the T.data pointers
+    for (size_t i = 0; i < arr->capacity; i++) {
+        free(arr->values[i].data);
+        arr->values[i].data = NULL;
+    }
+
+    // Free Array.values and set counters to 0
+    free(arr->values);
+    arr->values = NULL;
+    arr->size = 0;
+    arr->capacity = 0;
+
+    return result;
+}
+
+ReturnError Array_iterate(const Array* arr, CallbackFunction callback) {
+    ReturnError result = {.error = NO_ERROR};
+
+    if (arr == NULL || callback == NULL) {
+        result.error == ERROR_NULL;
+        return result;
+    }
+
+    ReturnData get_result;
+    for (size_t i = 0; i < arr->size; i++) {
+        get_result = Array_get(arr, i);
+        if (get_result.error > 0) {
+            result.error = get_result.error;
+            return result;
+        }
+        callback(get_result.value);
     }
 }
 
-void Array_clear(Array* arr) {
-    if (arr != NULL && arr->data != NULL) {
-        free(arr->data);
-        arr->data = NULL;
-        arr->size = 0;
-        arr->capacity = 0;
+ReturnError Array_swap(Array* arr, size_t index_a, size_t index_b) {
+    ReturnError result = {.error = NO_ERROR};
+
+    if (arr == NULL) {
+        result.error = ERROR_NULL;
+        return result;
     }
-}
 
-void Array_iterate(const Array* arr, void (*callback)(const void* element)) {
-    if (arr != NULL && callback != NULL) {
-        for (size_t i = 0; i < arr->size; i++) {
-            const void* element = Array_get(arr, i);
-            callback(element);
-        }
+    if (index_a >= arr->size || index_b >= arr->size) {
+        result.error = ERROR_INDEX;
+        return result;
     }
-}
 
-void Array_swap(Array* arr, size_t index_a, size_t index_b) {
-    if (arr != NULL && index_a < arr->size && index_b < arr->size) {
-        void* temp = malloc(arr->data_size);
-        memcpy(temp, Array_get(arr, index_a), arr->data_size);
-
-        Array_set(arr, index_a, Array_get(arr, index_b));
-        Array_set(arr, index_b, temp);
-
-        free(temp);
+    // Allocate a temp variable
+    T* temp = (T*)malloc(sizeof(T));
+    if (temp == NULL) {
+        result.error = ERROR_ALLOCATION;
+        return result;
     }
+    temp->data = malloc(arr->data_size);
+    if (temp->data == NULL) {
+        result.error = ERROR_ALLOCATION;
+        return result;
+    }
+
+    // Get value at index a
+    ReturnData get_result;
+    get_result = Array_get(arr, index_a);
+    if (get_result.error > 0) {
+        result.error = get_result.error;
+        return result;
+    }
+
+    // assign temp = a
+    temp->size = get_result.value->size;
+    memcpy(temp->data, get_result.value->data, get_result.value->size);
+
+    // get value at index b
+    get_result = Array_get(arr, index_b);
+    if (get_result.error > 0) {
+        result.error = get_result.error;
+        return result;
+    }
+
+    // Set index a = value b
+    ReturnError set_result;
+    set_result = Array_set(arr, index_a, get_result.value);
+    if (set_result.error > 0) {
+        result.error = set_result.error;
+        return result;
+    }
+
+    // Set index b = value a (temp)
+    set_result = Array_set(arr, index_b, temp);
+    if (set_result.error > 0) {
+        result.error = set_result.error;
+        return result;
+    }
+
+    // Free temp
+    free(temp->data);
+    free(temp);
+
+    return result;
 }
 
 static size_t partition(Array* arr, size_t low, size_t high,
                         CompareFunction compare) {
-    const void* pivot = Array_get(arr, high);
+    ReturnData get_result;
+    get_result = Array_get(arr, high);
+    T* pivot = get_result.value;
     size_t i = low - 1;
 
     for (size_t j = low; j < high; j++) {
-        if (compare(Array_get(arr, j), pivot) < 0) {
+        get_result = Array_get(arr, j);
+        if (compare(get_result.value, pivot) < 0) {
             i++;
             Array_swap(arr, i, j);
         }
@@ -416,7 +523,14 @@ static void quick_sort(Array* arr, size_t low, size_t high,
     }
 }
 
-void Array_sort(Array* arr, CompareFunction compare) {
+ReturnError Array_sort(Array* arr, CompareFunction compare) {
+    ReturnError result = {.error = NO_ERROR};
+
+    if (arr == NULL || compare == NULL) {
+        result.error = ERROR_NULL;
+        return result;
+    }
+
     if (arr != NULL && compare != NULL) {
         quick_sort(arr, 0, arr->size - 1, compare);
     }
