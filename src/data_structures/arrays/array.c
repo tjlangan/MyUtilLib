@@ -1,199 +1,343 @@
 #include "array.h"
 
-/**
- * @brief Creates a new Array.
- *
- * @param data_size Size of each element in bytes.
- * @param capacity Maximum capacity of the Array.
- * @return A pointer to the newly created Array, or NULL on failure.
- */
-Array* Array_create(size_t data_size, size_t capacity) {
+ReturnArray Array_create(size_t data_size, size_t capacity) {
+    ReturnArray result = {.error = NO_ERROR, .arr = NULL};
+
+    // Check valid arguments
     if (data_size == 0 || capacity == 0) {
-        return NULL;
+        result.error = ERROR;
+        return result;
     }
+
+    // Allocate memory and check for NULL
     Array* arr = (Array*)malloc(sizeof(Array));
-    arr->data_size = data_size;
+    if (arr == NULL) {
+        result.error = ERROR_ALLOCATION;
+        return result;
+    }
+
+    // Assign arguments to array params
     arr->size = 0;
     arr->capacity = capacity;
-    arr->data = malloc(data_size * capacity);
+    arr->data_size = data_size;
 
-    if (arr->data == NULL) {
+    // Allocate memory and check for NULL
+    arr->values = (T*)malloc(capacity * sizeof(T));
+    if (arr->values == NULL) {
+        result.error = ERROR_ALLOCATION;
         free(arr);
-        return NULL;
+        return result;
     }
-    return arr;
-}
 
-/**
- * @brief Destroys a Array and frees associated memory.
- *
- * @param arr Pointer to the Array to be destroyed.
- */
-void Array_destroy(Array** arr) {
-    if (*arr != NULL) {
-        free((*arr)->data);
-        free(*arr);
-        *arr = NULL;
-    }
-}
+    // For each element in array allocate memory and check for NULL
+    for (size_t i = 0; i < capacity; i++) {
+        arr->values[i].size = data_size;
+        arr->values[i].data = malloc(data_size);
+        if (arr->values[i].data == NULL) {
+            result.error = ERROR_ALLOCATION;
 
-/**
- * @brief Appends an element to the end of the Array.
- *
- * @param arr Pointer to the Array.
- * @param element Pointer to the element to be appended.
- */
-void Array_append(Array* arr, const void* element) {
-    if (arr != NULL) {
-        if (Array_is_full(arr)) {
-            Array_resize(arr, arr->capacity * 2 + 1);
+            // Free allocated memory
+            for (size_t j = 0; j < i; j++) {
+                free(arr->values[j].data);
+            }
+            free(arr->values);
+            free(arr);
+            return result;
         }
-        Array_set(arr, arr->size, element);
-        arr->size += 1;
     }
+
+    // Everything went good
+    result.arr = arr;
+
+    return result;
 }
 
-/**
- * @brief Inserts an element at a specific index in the Array.
- *
- * @param arr Pointer to the Array.
- * @param index Index at which the element will be inserted.
- * @param element Pointer to the element to be inserted.
- */
-void Array_insert(Array* arr, size_t index, const void* element) {
-    if (arr != NULL && index <= arr->size) {
-        if (Array_is_full(arr)) {
-            Array_resize(arr, arr->capacity * 2 + 1);
+ReturnError Array_destroy(Array** arr) {
+    ReturnError result = {.error = NO_ERROR};
+
+    if (*arr == NULL) {
+        result.error = ERROR_NULL;
+        return result;
+    }
+
+    for (size_t i = 0; i < (*arr)->capacity; i++) {
+        free((*arr)->values[i].data);
+    }
+    free((*arr)->values);
+    free(*arr);
+    *arr = NULL;
+
+    return result;
+}
+
+ReturnError Array_append(Array* arr, T* element) {
+    ReturnError result = {.error = NO_ERROR};
+
+    // Check if array or element is NULL
+    if (arr == NULL || element == NULL) {
+        result.error = ERROR_NULL;
+        return result;
+    }
+
+    // Check if array is full and check for errors
+    ReturnBool is_full_result = Array_is_full(arr);
+    if (is_full_result.error > 0) {
+        result.error = is_full_result.error;
+        return result;
+    }
+
+    // If array is full, resize it and check for errors
+    if (is_full_result.value == true) {
+        ReturnError resize_result = Array_resize(arr, arr->capacity * 2 + 1);
+        if (resize_result.error > 0) {
+            result.error = resize_result.error;
+            return result;
         }
+    }
 
-        for (size_t i = arr->size; i > index; i--) {
-            Array_set(arr, i, Array_get(arr, i - 1));
+    // Set the last value in the array to the element and check for errors
+    ReturnError set_result = Array_set(arr, arr->size, element);
+    if (set_result.error > 0) {
+        result.error = set_result.error;
+        return result;
+    }
+
+    // increment size counter
+    arr->size += 1;
+
+    return result;
+}
+
+ReturnError Array_insert(Array* arr, size_t index, T* element) {
+    ReturnError result = {.error = NO_ERROR};
+
+    // Check if array or element is NULL
+    if (arr == NULL || element == NULL) {
+        result.error = ERROR_NULL;
+        return result;
+    }
+
+    // Check index is in bounds
+    if (index > arr->size) {
+        result.error = ERROR_INDEX;
+        return result;
+    }
+
+    // Check if array is full
+    ReturnBool is_full_result = Array_is_full(arr);
+    if (is_full_result.error > 0) {
+        result.error = is_full_result.error;
+        return result;
+    }
+
+    // if array is full resize it
+    if (is_full_result.value == true) {
+        ReturnError resize_result = Array_resize(arr, arr->capacity * 2 + 1);
+        if (resize_result.error > 0) {
+            result.error = resize_result.error;
+            return result;
         }
-
-        Array_set(arr, index, element);
-        arr->size += 1;
     }
-}
 
-/**
- * @brief Removes an element at a specific index from the Array.
- *
- * @param arr Pointer to the Array.
- * @param index Index of the element to be removed.
- */
-void Array_remove(Array* arr, size_t index) {
-    if (arr != NULL && index < arr->size) {
-        for (size_t i = index; i < arr->size - 1; i++) {
-            Array_set(arr, i, Array_get(arr, i + 1));
+    ReturnData get_result;
+    ReturnError set_result;
+
+    // Loop starting at end shifting elements to the right
+    for (size_t i = arr->size; i > index; i--) {
+        get_result = Array_get(arr, i - 1);
+        if (get_result.error > 0) {
+            result.error = get_result.error;
+            return result;
         }
-
-        Array_set(arr, arr->size - 1, &(int){0});
-        arr->size -= 1;
+        set_result = Array_set(arr, i, get_result.value);
+        if (set_result.error > 0) {
+            result.error = set_result.error;
+            return result;
+        }
     }
+
+    // Set the element at specified index
+    set_result = Array_set(arr, index, element);
+    if (set_result.error > 0) {
+        result.error = set_result.error;
+        return result;
+    }
+
+    // increment counter
+    arr->size += 1;
+
+    return result;
 }
 
-/**
- * @brief Retrieves an element at a specific index in the Array.
- *
- * @param arr Pointer to the Array.
- * @param index Index of the element to be retrieved.
- * @return A pointer to the retrieved element, or NULL if the index is out of
- * bounds.
- */
-const void* Array_get(const Array* arr, size_t index) {
-    if (arr == NULL || arr->data == NULL || index >= arr->size) {
-        fprintf(
-            stderr,
-            "Array_get Failed! Return value is NULL. Attempted index = %ld\n",
-            index);
-        return NULL;
+ReturnError Array_remove(Array* arr, size_t index) {
+    ReturnError result = {.error = NO_ERROR};
+
+    // Check if array is null
+    if (arr == NULL) {
+        result.error = ERROR_NULL;
+        return result;
     }
-    return &((const char*)arr->data)[index * arr->data_size];
+
+    if (index >= arr->size) {
+        result.error = ERROR_INDEX;
+        return result;
+    }
+
+    ReturnData get_result;
+    ReturnError set_result;
+
+    // Loop start at index and shift to left
+    for (size_t i = index; i < arr->size - 1; i++) {
+        get_result = Array_get(arr, i + 1);
+        if (get_result.error > 0) {
+            result.error = get_result.error;
+            return result;
+        }
+        set_result = Array_set(arr, i, get_result.value);
+        if (set_result.error > 0) {
+            result.error = set_result.error;
+            return result;
+        }
+    }
+
+    // idk if this will work
+    T temp;
+    temp.size = arr->data_size;
+    temp.data = &(int){0};
+
+    set_result = Array_set(arr, arr->size - 1, &temp);
+    if (set_result.error > 0) {
+        result.error = set_result.error;
+        return result;
+    }
+
+    // decrement size counter
+    arr->size -= 1;
+
+    return result;
 }
 
-/**
- * @brief Updates the value of an element at a specific index in the Array.
- *
- * @param arr Pointer to the Array.
- * @param index Index of the element to be updated.
- * @param element Pointer to the new value for the element.
- */
-void Array_set(Array* arr, size_t index, const void* element) {
-    if (arr != NULL && arr->data != NULL && index <= arr->size) {
-        memcpy(&((char*)arr->data)[index * arr->data_size], element,
-               arr->data_size);
+ReturnData Array_get(const Array* arr, size_t index) {
+    ReturnData result = {.error = NO_ERROR, .value = NULL};
+
+    if (arr == NULL || arr->values == NULL) {
+        result.error = ERROR_NULL;
+        return result;
     }
+
+    if (index >= arr->size) {
+        result.error = ERROR_INDEX;
+        return result;
+    }
+
+    // who tf knows
+    // return &((const char*)arr->data)[index * arr->data_size];
+    result.value = &(arr->values[index]);
+
+    return result;
 }
 
-/**
- * @brief Searches for an element in the Array and returns its index.
- *
- * @param arr Pointer to the Array.
- * @param element Pointer to the element to be searched for.
- * @return The index of the first occurrence of the element, or SIZE_MAX if not
- * found.
- */
-size_t Array_find(const Array* arr, const void* element) {
-    if (arr == NULL || arr->data == NULL || element == NULL) {
-        return SIZE_MAX;
+ReturnError Array_set(Array* arr, size_t index, T* element) {
+    ReturnError result = {.error = NO_ERROR};
+
+    if (arr == NULL || element == NULL) {
+        result.error = ERROR_NULL;
+        return result;
     }
+
+    if (index >= arr->size) {
+        result.error = ERROR_INDEX;
+        return result;
+    }
+
+    if (element->size != arr->data_size) {
+        result.error = ERROR;
+        return result;
+    }
+
+    arr->values[index].size = element->size;
+    memcpy(arr->values[index].data, element->data, element->size);
+
+    return result;
+
+    // if (arr != NULL && arr->data != NULL && index <= arr->size) {
+    //     memcpy(&((char*)arr->data)[index * arr->data_size], element,
+    //            arr->data_size);
+    // }
+}
+
+ReturnSizeT Array_find(const Array* arr, T* element) {
+    ReturnSizeT result = {.error = NO_ERROR, .value = SIZE_MAX};
+
+    if (arr == NULL || arr->values == NULL || element == NULL) {
+        result.error = ERROR_NULL;
+        return result;
+    }
+
     for (size_t i = 0; i < arr->size; i++) {
-        if (memcmp(&((char*)arr->data)[i * arr->data_size], element,
-                   arr->data_size) == 0) {
-            return i;
+        if (memcmp(&(arr->values[i]), element, arr->data_size) == 0) {
+            result.value = i;
+            break;
         }
     }
-    return SIZE_MAX;
+
+    // Assume nobody has a 18 quintillion long array
+    if (result.value == SIZE_MAX) {
+        result.error = ERROR_NOT_FOUND;
+    }
+
+    return result;
 }
 
-/**
- * @brief Retrieves the current number of elements in the Array.
- *
- * @param arr Pointer to the Array.
- * @return The current number of elements in the Array, or SIZE_MAX if arr is
- * NULL.
- */
-size_t Array_size(const Array* arr) {
-    return (arr != NULL) ? arr->size : SIZE_MAX;
+ReturnSizeT Array_size(const Array* arr) {
+    ReturnSizeT result = {.error = NO_ERROR, .value = SIZE_MAX};
+
+    if (arr == NULL) {
+        result.error = ERROR_NULL;
+        return result;
+    }
+
+    result.value = arr->size;
+    return result;
 }
 
-/**
- * @brief Retrieves the maximum capacity of the Array.
- *
- * @param arr Pointer to the Array.
- * @return The maximum capacity of the Array, or SIZE_MAX if arr is NULL.
- */
-size_t Array_capacity(const Array* arr) {
-    return (arr != NULL) ? arr->capacity : SIZE_MAX;
+ReturnSizeT Array_capacity(const Array* arr) {
+    ReturnSizeT result = {.error = NO_ERROR, .value = SIZE_MAX};
+
+    if (arr == NULL) {
+        result.error = ERROR_NULL;
+        return result;
+    }
+
+    result.value = arr->capacity;
+    return result;
 }
 
-/**
- * @brief Checks if the Array is empty.
- *
- * @param arr Pointer to the Array.
- * @return True if the Array is empty, false otherwise.
- */
-bool Array_is_empty(const Array* arr) {
-    return (arr != NULL) ? (arr->size == 0) : false;
+ReturnBool Array_is_empty(const Array* arr) {
+    ReturnBool result = {.error = NO_ERROR, .value = SIZE_MAX};
+
+    if (arr == NULL) {
+        result.error = ERROR_NULL;
+        return result;
+    }
+
+    result.value = arr->size == 0;
+    return result;
 }
 
-/**
- * @brief Checks if the Array is full.
- *
- * @param arr Pointer to the Array.
- * @return True if the Array is full, false otherwise.
- */
-bool Array_is_full(const Array* arr) {
-    return (arr != NULL) ? (arr->size == arr->capacity) : false;
+ReturnBool Array_is_full(const Array* arr) {
+    ReturnBool result = {.error = NO_ERROR, .value = SIZE_MAX};
+
+    if (arr == NULL) {
+        result.error = ERROR_NULL;
+        return result;
+    }
+
+    result.value = arr->size == arr->capacity;
+    return result;
 }
 
-/**
- * @brief Resizes the Array to a new capacity.
- *
- * @param arr Pointer to the Array.
- * @param new_capacity New capacity for the Array.
- */
-void Array_resize(Array* arr, size_t new_capacity) {
+ReturnError Array_resize(Array* arr, size_t new_capacity) {
     if (arr != NULL) {
         if (new_capacity < arr->size) {
             arr->size = new_capacity;
@@ -205,20 +349,14 @@ void Array_resize(Array* arr, size_t new_capacity) {
             arr->capacity = new_capacity;
         } else {
             // TODO
-            fprintf(
-                stderr,
-                "Array_resize Failed! Could not realloc to new_capacity = %ld",
-                new_capacity);
+            fprintf(stderr,
+                    "Array_resize Failed! Could not realloc to "
+                    "new_capacity = %ld",
+                    new_capacity);
         }
     }
 }
 
-/**
- * @brief Clears all elements from the Array. Frees memory associated with
- * Array.data
- *
- * @param arr Pointer to the Array.
- */
 void Array_clear(Array* arr) {
     if (arr != NULL && arr->data != NULL) {
         free(arr->data);
@@ -228,13 +366,6 @@ void Array_clear(Array* arr) {
     }
 }
 
-/**
- * @brief Iterates over the elements of the Array and applies a callback
- * function.
- *
- * @param arr Pointer to the Array.
- * @param callback Callback function to apply to each element.
- */
 void Array_iterate(const Array* arr, void (*callback)(const void* element)) {
     if (arr != NULL && callback != NULL) {
         for (size_t i = 0; i < arr->size; i++) {
@@ -244,13 +375,6 @@ void Array_iterate(const Array* arr, void (*callback)(const void* element)) {
     }
 }
 
-/**
- * @brief Swaps the elements at two indices in the Array.
- *
- * @param arr Pointer to the Array.
- * @param index_a Index of the first element.
- * @param index_b Index of the second element.
- */
 void Array_swap(Array* arr, size_t index_a, size_t index_b) {
     if (arr != NULL && index_a < arr->size && index_b < arr->size) {
         void* temp = malloc(arr->data_size);
@@ -264,7 +388,7 @@ void Array_swap(Array* arr, size_t index_a, size_t index_b) {
 }
 
 static size_t partition(Array* arr, size_t low, size_t high,
-                        ArrayCompareFunction compare) {
+                        CompareFunction compare) {
     const void* pivot = Array_get(arr, high);
     size_t i = low - 1;
 
@@ -280,7 +404,7 @@ static size_t partition(Array* arr, size_t low, size_t high,
 }
 
 static void quick_sort(Array* arr, size_t low, size_t high,
-                       ArrayCompareFunction compare) {
+                       CompareFunction compare) {
     if (low < high) {
         size_t pi = partition(arr, low, high, compare);
 
@@ -292,14 +416,7 @@ static void quick_sort(Array* arr, size_t low, size_t high,
     }
 }
 
-/**
- * @brief Sorts the elements of the Array based on a custom comparison
- * function.
- *
- * @param arr Pointer to the Array.
- * @param compare Comparison function for sorting elements.
- */
-void Array_sort(Array* arr, ArrayCompareFunction compare) {
+void Array_sort(Array* arr, CompareFunction compare) {
     if (arr != NULL && compare != NULL) {
         quick_sort(arr, 0, arr->size - 1, compare);
     }
