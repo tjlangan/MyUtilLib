@@ -146,7 +146,7 @@ void test_int_list() {
     assert(IntList_find(list, 23) == 6);
 
     // Test sort
-    IntList_sort(list, compare_list);
+    IntList_sort(list);
     for (size_t i = 0; i < 10; i++) {
         assert(IntList_get(list, i) == sorted[i]);
     }

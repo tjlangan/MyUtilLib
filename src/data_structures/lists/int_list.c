@@ -74,7 +74,10 @@ int IntList_get(List* list, size_t index) {
         return *((int*)(temp->data));
     }
 
-    return (int)NULL;
+    /**
+     * TODO: FIX THIS
+     * */
+    return 0;
 }
 
 /**
@@ -120,11 +123,8 @@ static int __compare(const ListNode* a, const ListNode* b) {
 /**
  * @brief Sorts the linked list using QuickSort algorithm.
  * @param list: Pointer to the linked list.
- * @param compare: Function pointer to a comparison function for sorting.
  */
-void IntList_sort(List* list, ListNodeCompareFunction compare) {
-    List_sort(list, __compare);
-}
+void IntList_sort(List* list) { List_sort(list, __compare); }
 
 static void __print(const void* element) { printf("%d ", *((int*)element)); }
 

@@ -1,161 +1,159 @@
 #include "int_array.h"
 
-/**
- * @brief Creates a new Array for ints
- *
- * @param capacity Maximum capacity of the Array.
- * @return A pointer to the newly created Array, or NULL on failure.
- */
 Array* IntArray_create(size_t capacity) {
-    return Array_create(sizeof(int), capacity);
+    ReturnArray result = Array_create(sizeof(int), capacity);
+    if (result.error > 0) {
+        /**
+         * TODO: Error handling
+         */
+    }
+    return result.arr;
 }
 
-/**
- * @brief Destroys a Array and frees associated memory.
- *
- * @param arr Pointer to the Array to be destroyed.
- */
-void IntArray_destroy(Array** arr) { Array_destroy(arr); }
-
-/**
- * @brief Appends an element to the end of the Array.
- *
- * @param arr Pointer to the Array.
- * @param element The element to be appended.
- */
-void IntArray_append(Array* arr, const int element) {
-    Array_append(arr, &element);
+void IntArray_destroy(Array** arr) {
+    ReturnError result = Array_destroy(arr);
+    if (result.error > 0) {
+        /**
+         * TODO: Error handling
+         */
+    }
 }
 
-/**
- * @brief Inserts an element at a specific index in the Array.
- *
- * @param arr Pointer to the Array.
- * @param index Index at which the element will be inserted.
- * @param element The element to be inserted.
- */
-void IntArray_insert(Array* arr, size_t index, const int element) {
-    Array_insert(arr, index, &element);
+void IntArray_append(Array* arr, int element) {
+    ReturnError result = Array_append(arr, &(T){sizeof(int), &element});
+    if (result.error > 0) {
+        /**
+         * TODO: Error handling
+         */
+    }
 }
 
-/**
- * @brief Removes an element at a specific index from the Array.
- *
- * @param arr Pointer to the Array.
- * @param index Index of the element to be removed.
- */
-void IntArray_remove(Array* arr, size_t index) { Array_remove(arr, index); }
+void IntArray_insert(Array* arr, size_t index, int element) {
+    ReturnError result = Array_insert(arr, index, &(T){sizeof(int), &element});
+    if (result.error > 0) {
+        /**
+         * TODO: Error handling
+         */
+    }
+}
 
-/**
- * @brief Retrieves an element at a specific index in the Array.
- *
- * @param arr Pointer to the Array.
- * @param index Index of the element to be retrieved.
- * @return The retrieved element, or NULL if the index is out of
- * bounds.
- */
+void IntArray_remove(Array* arr, size_t index) {
+    ReturnError result = Array_remove(arr, index);
+    if (result.error > 0) {
+        /**
+         * TODO: Error handling
+         */
+    }
+}
+
 int IntArray_get(const Array* arr, size_t index) {
-    return *(int*)Array_get(arr, index);
+    ReturnData result = Array_get(arr, index);
+    if (result.error > 0) {
+        /**
+         * TODO: Error handling
+         */
+    }
+    return *(int*)result.value->data;
 }
 
-/**
- * @brief Updates the value of an element at a specific index in the Array.
- *
- * @param arr Pointer to the Array.
- * @param index Index of the element to be updated.
- * @param element Pointer to the new value for the element.
- */
-void IntArray_set(Array* arr, size_t index, const int element) {
-    Array_set(arr, index, &element);
+void IntArray_set(Array* arr, size_t index, int element) {
+    ReturnError result = Array_set(arr, index, &(T){sizeof(int), &element});
+    if (result.error > 0) {
+        /**
+         * TODO: Error handling
+         */
+    }
 }
 
-/**
- * @brief Searches for an element in the Array and returns its index.
- *
- * @param arr Pointer to the Array.
- * @param element Pointer to the element to be searched for.
- * @return The index of the first occurrence of the element, or SIZE_MAX if not
- * found.
- */
-size_t IntArray_find(const Array* arr, const int element) {
-    return Array_find(arr, &element);
+size_t IntArray_find(const Array* arr, int element) {
+    ReturnSizeT result = Array_find(arr, &(T){sizeof(int), &element});
+    if (result.error > 0) {
+        /**
+         * TODO: Error handling
+         */
+    }
+    return result.value;
 }
 
-/**
- * @brief Retrieves the current number of elements in the Array.
- *
- * @param arr Pointer to the Array.
- * @return The current number of elements in the Array, or SIZE_MAX if arr is
- * NULL.
- */
-size_t IntArray_size(const Array* arr) { return Array_size(arr); }
+size_t IntArray_size(const Array* arr) {
+    ReturnSizeT result = Array_size(arr);
+    if (result.error > 0) {
+        /**
+         * TODO: Error handling
+         */
+    }
+    return result.value;
+}
 
-/**
- * @brief Retrieves the maximum capacity of the Array.
- *
- * @param arr Pointer to the Array.
- * @return The maximum capacity of the Array, or SIZE_MAX if arr is NULL.
- */
-size_t IntArray_capacity(const Array* arr) { return Array_capacity(arr); }
+size_t IntArray_capacity(const Array* arr) {
+    ReturnSizeT result = Array_capacity(arr);
+    if (result.error > 0) {
+        /**
+         * TODO: Error handling
+         */
+    }
+    return result.value;
+}
 
-/**
- * @brief Checks if the Array is empty.
- *
- * @param arr Pointer to the Array.
- * @return True if the Array is empty, false otherwise.
- */
-bool IntArray_is_empty(const Array* arr) { return Array_is_empty(arr); }
+bool IntArray_is_empty(const Array* arr) {
+    ReturnBool result = Array_is_empty(arr);
+    if (result.error > 0) {
+        /**
+         * TODO: Error handling
+         */
+    }
+    return result.value;
+}
 
-/**
- * @brief Checks if the Array is full.
- *
- * @param arr Pointer to the Array.
- * @return True if the Array is full, false otherwise.
- */
-bool IntArray_is_full(const Array* arr) { return Array_is_full(arr); }
+bool IntArray_is_full(const Array* arr) {
+    ReturnBool result = Array_is_full(arr);
+    if (result.error > 0) {
+        /**
+         * TODO: Error handling
+         */
+    }
+    return result.value;
+}
 
-/**
- * @brief Resizes the Array to a new capacity.
- *
- * @param arr Pointer to the Array.
- * @param new_capacity New capacity for the Array.
- */
 void IntArray_resize(Array* arr, size_t new_capacity) {
-    Array_resize(arr, new_capacity);
+    ReturnError result = Array_resize(arr, new_capacity);
+    if (result.error > 0) {
+        /**
+         * TODO: Error handling
+         */
+    }
 }
 
-/**
- * @brief Clears all elements from the Array.
- *
- * @param arr Pointer to the Array.
- */
-void IntArray_clear(Array* arr) { Array_clear(arr); }
-
-/**
- * @brief Iterates over the elements of the Array and applies a callback
- * function.
- *
- * @param arr Pointer to the Array.
- * @param callback Callback function to apply to each element.
- */
-void IntArray_iterate(const Array* arr, void (*callback)(const void* element)) {
-    Array_iterate(arr, callback);
+void IntArray_clear(Array* arr) {
+    ReturnError result = Array_clear(arr);
+    if (result.error > 0) {
+        /**
+         * TODO: Error handling
+         */
+    }
 }
 
-/**
- * @brief Swaps the elements at two indices in the Array.
- *
- * @param arr Pointer to the Array.
- * @param index_a Index of the first element.
- * @param index_b Index of the second element.
- */
+void IntArray_iterate(const Array* arr, CallbackFunction callback) {
+    ReturnError result = Array_iterate(arr, callback);
+    if (result.error > 0) {
+        /**
+         * TODO: Error handling
+         */
+    }
+}
+
 void IntArray_swap(Array* arr, size_t index_a, size_t index_b) {
-    Array_swap(arr, index_a, index_b);
+    ReturnError result = Array_swap(arr, index_a, index_b);
+    if (result.error > 0) {
+        /**
+         * TODO: Error handling
+         */
+    }
 }
 
-static int __compare(const void* a, const void* b) {
-    int int_a = *((const int*)a);
-    int int_b = *((const int*)b);
+static int __compare__(const T* a, const T* b) {
+    int int_a = *(const int*)a->data;
+    int int_b = *(const int*)b->data;
 
     if (int_a < int_b) {
         return -1;  // a should come before b
@@ -166,13 +164,15 @@ static int __compare(const void* a, const void* b) {
     }
 }
 
-/**
- * @brief Sorts the elements of the Array
- *
- * @param arr Pointer to the Array.
- */
-void IntArray_sort(Array* arr) { Array_sort(arr, __compare); }
+void IntArray_sort(Array* arr) {
+    ReturnError result = Array_sort(arr, __compare__);
+    if (result.error > 0) {
+        /**
+         * TODO: Error handling
+         */
+    }
+}
 
-static void __print(const void* element) { printf("%d ", *(int*)element); }
+static void __print__(T* element) { printf("%d ", *(int*)element->data); }
 
-void IntArray_print(Array* arr) { IntArray_iterate(arr, __print); }
+void IntArray_print(Array* arr) { IntArray_iterate(arr, __print__); }

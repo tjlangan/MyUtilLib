@@ -6,9 +6,7 @@
  * @return List*: Pointer to the newly created list, NULL if memory
  * allocation fails.
  */
-DList* DList_create(size_t data_size) {
-    DList* list = (DList*)malloc(data_size);
-}
+DList* DList_create(size_t data_size);
 
 /**
  * @brief clears the contents of the list

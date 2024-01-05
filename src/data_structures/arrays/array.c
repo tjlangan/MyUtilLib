@@ -245,7 +245,7 @@ ReturnError Array_set(Array* arr, size_t index, T* element) {
         return result;
     }
 
-    if (index >= arr->size) {
+    if (index > arr->size) {
         result.error = ERROR_INDEX;
         return result;
     }
@@ -275,7 +275,8 @@ ReturnSizeT Array_find(const Array* arr, T* element) {
     }
 
     for (size_t i = 0; i < arr->size; i++) {
-        if (memcmp(&(arr->values[i]), element, arr->data_size) == 0) {
+        if ((arr->values[i].size == element->size) &&
+            (memcmp(arr->values[i].data, element->data, element->size) == 0)) {
             result.value = i;
             break;
         }
@@ -365,7 +366,7 @@ ReturnError Array_resize(Array* arr, size_t new_capacity) {
     } else {
         for (size_t i = arr->capacity; i < new_capacity; i++) {
             new_values[i].size = arr->data_size;
-            new_values[i].data = mallloc(arr->data_size);
+            new_values[i].data = malloc(arr->data_size);
             if (new_values[i].data == NULL) {
                 result.error = ERROR_ALLOCATION;
                 return result;
@@ -410,7 +411,7 @@ ReturnError Array_iterate(const Array* arr, CallbackFunction callback) {
     ReturnError result = {.error = NO_ERROR};
 
     if (arr == NULL || callback == NULL) {
-        result.error == ERROR_NULL;
+        result.error = ERROR_NULL;
         return result;
     }
 
@@ -423,6 +424,8 @@ ReturnError Array_iterate(const Array* arr, CallbackFunction callback) {
         }
         callback(get_result.value);
     }
+
+    return result;
 }
 
 ReturnError Array_swap(Array* arr, size_t index_a, size_t index_b) {
@@ -534,4 +537,6 @@ ReturnError Array_sort(Array* arr, CompareFunction compare) {
     if (arr != NULL && compare != NULL) {
         quick_sort(arr, 0, arr->size - 1, compare);
     }
+
+    return result;
 }

@@ -24,7 +24,7 @@ void IntArray_destroy(Array** arr);
  * @param arr Pointer to the Array.
  * @param element The element to be appended.
  */
-void IntArray_append(Array* arr, const int element);
+void IntArray_append(Array* arr, int element);
 
 /**
  * @brief Inserts an element at a specific index in the Array.
@@ -33,7 +33,7 @@ void IntArray_append(Array* arr, const int element);
  * @param index Index at which the element will be inserted.
  * @param element The element to be inserted.
  */
-void IntArray_insert(Array* arr, size_t index, const int element);
+void IntArray_insert(Array* arr, size_t index, int element);
 
 /**
  * @brief Removes an element at a specific index from the Array.
@@ -60,7 +60,7 @@ int IntArray_get(const Array* arr, size_t index);
  * @param index Index of the element to be updated.
  * @param element Pointer to the new value for the element.
  */
-void IntArray_set(Array* arr, size_t index, const int element);
+void IntArray_set(Array* arr, size_t index, int element);
 
 /**
  * @brief Searches for an element in the Array and returns its index.
@@ -70,7 +70,7 @@ void IntArray_set(Array* arr, size_t index, const int element);
  * @return The index of the first occurrence of the element, or SIZE_MAX if not
  * found.
  */
-size_t IntArray_find(const Array* arr, const int element);
+size_t IntArray_find(const Array* arr, int element);
 
 /**
  * @brief Retrieves the current number of elements in the Array.
@@ -127,7 +127,7 @@ void IntArray_clear(Array* arr);
  * @param arr Pointer to the Array.
  * @param callback Callback function to apply to each element.
  */
-void IntArray_iterate(const Array* arr, void (*callback)(const void* element));
+void IntArray_iterate(const Array* arr, CallbackFunction callback);
 
 /**
  * @brief Swaps the elements at two indices in the Array.

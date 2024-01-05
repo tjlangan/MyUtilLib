@@ -114,7 +114,7 @@ typedef int (*ListNodeCompareFunction)(const ListNode* a, const ListNode* b);
  * @param list: Pointer to the linked list.
  * @param compare: Function pointer to a comparison function for sorting.
  */
-void IntList_sort(List* list, ListNodeCompareFunction compare);
+void IntList_sort(List* list);
 
 /**
  * @brief Prints the contents of the list to stdout
