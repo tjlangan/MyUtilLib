@@ -6,8 +6,8 @@
 int main() {
     printf("Testing Arrays...\n");
     test_array();
-    // test_int_array();
-    // test_struct_array();
+    test_int_array();
+    test_struct_array();
     printf("Array tests pass!\n");
 
     printf("Testing Linked Lists...\n");

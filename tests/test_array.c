@@ -25,9 +25,9 @@ int compare_int(const T* a, const T* b) {
     }
 }
 
-int compare_person(const void* a, const void* b) {
-    int age_a = (*((const Person*)a)).age;
-    int age_b = (*((const Person*)b)).age;
+int compare_person(const T* a, const T* b) {
+    int age_a = (*((const Person*)a->data)).age;
+    int age_b = (*((const Person*)b->data)).age;
 
     if (age_a < age_b) {
         return -1;
@@ -38,7 +38,7 @@ int compare_person(const void* a, const void* b) {
     }
 }
 
-void new_year(const void* element) { (*((Person*)element)).age++; }
+void new_year(T* element) { (*((Person*)element->data)).age++; }
 
 void test_array() {
     // Test creation
@@ -213,15 +213,19 @@ void test_array() {
     assert(destroy_result.error == NO_ERROR);
     assert(arr == NULL);
 }
-/*
+
 void test_int_array() {
     // Test creation
     Array* arr = IntArray_create(5);
     assert(arr != NULL);
     assert(arr->capacity == 5);
-    assert(arr->data != NULL);
+    assert(arr->values != NULL);
     assert(arr->size == 0);
     assert(arr->data_size == sizeof(int));
+    for (size_t i = 0; i < arr->capacity; i++) {
+        assert(arr->values[i].size == sizeof(int));
+        assert(arr->values[i].data != NULL);
+    }
 
     // Test basics
     assert(IntArray_size(arr) == 0);
@@ -241,7 +245,7 @@ void test_int_array() {
     IntArray_insert(arr, 1, 15);  // insert in middle {7, 15, 42 98}
     assert(IntArray_size(arr) == 4);
     assert(IntArray_get(arr, 0) == 7);
-    assert(IntArray_get(arr, Array_size(arr) - 1) == 98);
+    assert(IntArray_get(arr, IntArray_size(arr) - 1) == 98);
     assert(IntArray_get(arr, 1) == 15);
 
     // Test removing
@@ -297,18 +301,33 @@ void test_int_array() {
 
 void test_struct_array() {
     // Test creation
-    Array* arr = Array_create(sizeof(Person), 5);
+    ReturnArray create_result = Array_create(sizeof(Person), 5);
+    assert(create_result.error == NO_ERROR);
+    assert(create_result.arr != NULL);
+    Array* arr = create_result.arr;
     assert(arr != NULL);
     assert(arr->capacity == 5);
-    assert(arr->data != NULL);
+    assert(arr->values != NULL);
     assert(arr->size == 0);
     assert(arr->data_size == sizeof(Person));
+    for (size_t i = 0; i < arr->capacity; i++) {
+        assert(arr->values[i].size == sizeof(Person));
+        assert(arr->values[i].data != NULL);
+    }
 
     // Test basics
-    assert(Array_size(arr) == 0);
-    assert(Array_capacity(arr) == 5);
-    assert(Array_is_empty(arr) == true);
-    assert(Array_is_full(arr) == false);
+    ReturnSizeT size_result = Array_size(arr);
+    assert(size_result.error == NO_ERROR);
+    assert(size_result.value == 0);
+    ReturnSizeT capacity_result = Array_capacity(arr);
+    assert(capacity_result.error == NO_ERROR);
+    assert(capacity_result.value == 5);
+    ReturnBool is_empty_result = Array_is_empty(arr);
+    assert(is_empty_result.error == NO_ERROR);
+    assert(is_empty_result.value == true);
+    ReturnBool is_full_result = Array_is_full(arr);
+    assert(is_full_result.error == NO_ERROR);
+    assert(is_full_result.value == false);
 
     Person renee;
     renee.age = 23;
@@ -340,80 +359,162 @@ void test_struct_array() {
     brewski.height = 1.5;
     strcpy(brewski.name, "brewski");
 
-    Person* temp = (Person*)malloc(sizeof(Person));
-
     // Test appending
-    Array_append(arr, &renee);  // {renee}
-    assert(Array_size(arr) == 1);
-    temp = (Person*)Array_get(arr, 0);
-    assert(temp->age == renee.age);
-    assert(temp->height == renee.height);
-    assert(strcmp(temp->name, renee.name) == 0);
+    ReturnError append_result =
+        Array_append(arr, &(T){sizeof(Person), &renee});  // {renee}
+    assert(append_result.error == NO_ERROR);
+
+    size_result = Array_size(arr);
+    assert(size_result.error == NO_ERROR);
+    assert(size_result.value == 1);
+
+    ReturnData get_result = Array_get(arr, 0);
+    assert(get_result.error == NO_ERROR);
+    assert(((Person*)get_result.value->data)->age == renee.age);
+    assert(((Person*)get_result.value->data)->height == renee.height);
+    assert(strcmp(((Person*)get_result.value->data)->name, renee.name) == 0);
 
     // Test inserting
-    Array_insert(arr, 0, &tj);  // insert in front {tj, renee}
-    Array_insert(arr, Array_size(arr),
-                 &hunter);        // insert at back {tj, renee, hunter}
-    Array_insert(arr, 1, &anna);  // insert in middle {tj, anna, renee, hunter}
+    ReturnError insert_result = Array_insert(
+        arr, 0, &(T){sizeof(Person), &tj});  // insert in front {tj, renee}
+    assert(insert_result.error == NO_ERROR);
 
-    assert(Array_size(arr) == 4);
-    temp = (Person*)Array_get(arr, 0);
-    assert(strcmp(temp->name, tj.name) == 0);
-    temp = (Person*)Array_get(arr, Array_size(arr) - 1);
-    assert(strcmp(temp->name, hunter.name) == 0);
-    temp = (Person*)Array_get(arr, 1);
-    assert(strcmp(temp->name, anna.name) == 0);
+    size_result = Array_size(arr);
+    assert(size_result.error == NO_ERROR);
+    assert(size_result.value == 2);
+
+    insert_result = Array_insert(
+        arr, size_result.value,
+        &(T){sizeof(Person), &hunter});  // insert at back {tj, renee, hunter}
+    assert(insert_result.error == NO_ERROR);
+
+    insert_result = Array_insert(
+        arr, 1,
+        &(T){sizeof(Person),
+             &anna});  // insert in middle {tj, anna, renee, hunter}
+    assert(insert_result.error == NO_ERROR);
+
+    size_result = Array_size(arr);
+    assert(size_result.error == NO_ERROR);
+    assert(size_result.value == 4);
+
+    get_result = Array_get(arr, 0);
+    assert(get_result.error == NO_ERROR);
+    assert(((Person*)get_result.value->data)->age == tj.age);
+    assert(((Person*)get_result.value->data)->height == tj.height);
+    assert(strcmp(((Person*)get_result.value->data)->name, tj.name) == 0);
+
+    get_result = Array_get(arr, 1);
+    assert(get_result.error == NO_ERROR);
+    assert(((Person*)get_result.value->data)->age == anna.age);
+    assert(((Person*)get_result.value->data)->height == anna.height);
+    assert(strcmp(((Person*)get_result.value->data)->name, anna.name) == 0);
+
+    get_result = Array_get(arr, 2);
+    assert(get_result.error == NO_ERROR);
+    assert(((Person*)get_result.value->data)->age == renee.age);
+    assert(((Person*)get_result.value->data)->height == renee.height);
+    assert(strcmp(((Person*)get_result.value->data)->name, renee.name) == 0);
+
+    get_result = Array_get(arr, 3);
+    assert(get_result.error == NO_ERROR);
+    assert(((Person*)get_result.value->data)->age == hunter.age);
+    assert(((Person*)get_result.value->data)->height == hunter.height);
+    assert(strcmp(((Person*)get_result.value->data)->name, hunter.name) == 0);
 
     // Test removing
-    Array_remove(arr, 1);  // remove middle {tj, renee, hunter}
-    Array_remove(arr, Array_size(arr) - 1);  // remove back {tj renee}
-    Array_remove(arr, 0);                    // remove front {renee}
+    ReturnError remove_result =
+        Array_remove(arr, 1);  // remove middle {tj, renee, hunter}
+    assert(remove_result.error == NO_ERROR);
+    remove_result = Array_remove(arr, 2);  // remove back {tj renee}
+    assert(remove_result.error == NO_ERROR);
+    remove_result = Array_remove(arr, 0);  // remove front {renee}
+    assert(remove_result.error == NO_ERROR);
 
-    assert(Array_size(arr) == 1);
-    temp = (Person*)Array_get(arr, 0);
-    assert(strcmp(temp->name, renee.name) == 0);
+    size_result = Array_size(arr);
+    assert(size_result.error == NO_ERROR);
+    assert(size_result.value == 1);
+
+    get_result = Array_get(arr, 0);
+    assert(get_result.error == NO_ERROR);
+    assert(((Person*)get_result.value->data)->age == renee.age);
+    assert(((Person*)get_result.value->data)->height == renee.height);
+    assert(strcmp(((Person*)get_result.value->data)->name, renee.name) == 0);
 
     // Test setting
-    Array_set(arr, 0, &brewski);
-    assert(Array_size(arr) == 1);
-    temp = (Person*)Array_get(arr, 0);
-    assert(strcmp(temp->name, brewski.name) == 0);
+    ReturnError set_result = Array_set(arr, 0, &(T){sizeof(Person), &brewski});
+    assert(set_result.error == NO_ERROR);
+    size_result = Array_size(arr);
+    assert(size_result.error == NO_ERROR);
+    assert(size_result.value == 1);
+
+    get_result = Array_get(arr, 0);
+    assert(get_result.error == NO_ERROR);
+    assert(((Person*)get_result.value->data)->age == brewski.age);
+    assert(((Person*)get_result.value->data)->height == brewski.height);
+    assert(strcmp(((Person*)get_result.value->data)->name, brewski.name) == 0);
 
     // Test clearing
-    Array_clear(arr);
+    ReturnError clear_result = Array_clear(arr);
+    assert(clear_result.error == NO_ERROR);
     assert(arr != NULL);
-    assert(Array_size(arr) == 0);
-    assert(Array_capacity(arr) == 0);
+
+    size_result = Array_size(arr);
+    assert(size_result.error == NO_ERROR);
+    assert(size_result.value == 0);
+
+    capacity_result = Array_size(arr);
+    assert(capacity_result.error == NO_ERROR);
+    assert(capacity_result.value == 0);
 
     Person people[] = {renee, tj, hunter, anna, emily, brewski};
     Person sorted[] = {brewski, hunter, anna, renee, tj, emily};
 
     // Test adding a bunch of vals
     for (size_t i = 0; i < 6; i++) {
-        Array_append(arr, &people[i]);
-        assert(Array_size(arr) == (i + 1));
-        temp = (Person*)Array_get(arr, i);
-        assert(strcmp(temp->name, people[i].name) == 0);
+        append_result = Array_append(arr, &(T){sizeof(Person), &people[i]});
+        assert(append_result.error == NO_ERROR);
+
+        size_result = Array_size(arr);
+        assert(size_result.error == NO_ERROR);
+        assert(size_result.value == (i + 1));
+
+        get_result = Array_get(arr, i);
+        assert(get_result.error == NO_ERROR);
+        assert(((Person*)get_result.value->data)->age == people[i].age);
+        assert(((Person*)get_result.value->data)->height == people[i].height);
+        assert(strcmp(((Person*)get_result.value->data)->name,
+                      people[i].name) == 0);
     }
 
     // Test find
-    assert(Array_find(arr, &anna) == 3);
+    ReturnSizeT find_result = Array_find(arr, &(T){sizeof(Person), &anna});
+    assert(find_result.error == NO_ERROR);
+    assert(find_result.value == 3);
 
     // Test sort
-    Array_sort(arr, compare_person);
+    ReturnError sort_result = Array_sort(arr, compare_person);
+    assert(sort_result.error == NO_ERROR);
     for (size_t i = 0; i < 6; i++) {
-        temp = (Person*)Array_get(arr, i);
-        assert(strcmp(temp->name, sorted[i].name) == 0);
+        get_result = Array_get(arr, i);
+        assert(get_result.error == NO_ERROR);
+        assert(((Person*)get_result.value->data)->age == sorted[i].age);
+        assert(((Person*)get_result.value->data)->height == sorted[i].height);
+        assert(strcmp(((Person*)get_result.value->data)->name,
+                      sorted[i].name) == 0);
     }
 
-    Array_iterate(arr, new_year);
+    // Test Iterate
+    ReturnError iterate_result = Array_iterate(arr, new_year);
+    assert(iterate_result.error == NO_ERROR);
     for (size_t i = 0; i < 6; i++) {
-        temp = (Person*)Array_get(arr, i);
-        assert(temp->age == (sorted[i].age + 1));
+        get_result = Array_get(arr, i);
+        assert(get_result.error == NO_ERROR);
+        assert(((Person*)get_result.value->data)->age == (sorted[i].age + 1));
     }
 
     // Test Delete
-    Array_destroy(&arr);
+    ReturnError destroy_result = Array_destroy(&arr);
+    assert(destroy_result.error == NO_ERROR);
     assert(arr == NULL);
 }
-*/
